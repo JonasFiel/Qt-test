@@ -1,5 +1,6 @@
+import random
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QLabel, QWidget, QTextEdit
+from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QTextEdit
 from engine import Character # Importing your logic!
 
 class RPGWindow(QMainWindow):
@@ -10,13 +11,52 @@ class RPGWindow(QMainWindow):
         # Initialize Game Data
         self.player = Character("Hero", 100, 10)
 
-        self.enemy = Character("Slime", 30, 5)
-        self.enemy = Character("Goblin", 50, 7) # You can switch between different enemies here!
+        self.enemy_slime = Character("Slime", 30, 5)
+        self.enemy_goblin = Character("Goblin", 50, 7)  # You can switch between different enemies here!
+
+        enemies = [self.enemy_slime, self.enemy_goblin]
+        self.enemy = random.choice(enemies)  # Randomly select an enemy for the player to fight when going north
 
         # Setup UI
         self.setup_ui()
 
     def setup_ui(self):
+        self.label = QLabel("You are a solo adventurer who has entered the py dungeon. What do you do?")
+        self.label.setWordWrap(True) # Allow text to wrap for better readability
+        self.log = QTextEdit()
+        self.log.setReadOnly(True) # Make the log read-only so players can't type in it
+
+        self.btn_north = QPushButton("Go North")
+        self.btn_south = QPushButton("Go South")
+        self.btn_east = QPushButton("Go East")
+        self.btn_west = QPushButton("Go West")
+
+        self.btn_north.clicked.connect(self.fight_ui)
+        self.btn_south.clicked.connect(self.fight_ui)
+        self.btn_east.clicked.connect(self.fight_ui)
+        self.btn_west.clicked.connect(self.fight_ui)
+
+        button_layout = QVBoxLayout()
+        button_layout.addWidget(self.btn_north)
+        button_layout.addWidget(self.btn_south)
+        button_layout.addWidget(self.btn_east)
+        button_layout.addWidget(self.btn_west)
+
+        label_layout = QVBoxLayout()
+        label_layout.addWidget(self.label)
+        label_layout.addWidget(self.log)
+
+        layout = QHBoxLayout()
+        layout.addLayout(label_layout)
+        layout.addLayout(button_layout)
+
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
+
+
+
+    def fight_ui(self):
         self.label_hp = QLabel(f"Player HP: {self.player.hp} | {self.enemy.name} HP: {self.enemy.hp}")
         self.log = QTextEdit()
         self.log.setReadOnly(True)
