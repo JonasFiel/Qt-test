@@ -9,13 +9,15 @@ class RPGWindow(QMainWindow):
         
         # Initialize Game Data
         self.player = Character("Hero", 100, 10)
+
         self.enemy = Character("Slime", 30, 5)
+        self.enemy = Character("Goblin", 50, 7) # You can switch between different enemies here!
 
         # Setup UI
         self.setup_ui()
 
     def setup_ui(self):
-        self.label_hp = QLabel(f"Player HP: {self.player.hp} | Enemy HP: {self.enemy.hp}")
+        self.label_hp = QLabel(f"Player HP: {self.player.hp} | {self.enemy.name} HP: {self.enemy.hp}")
         self.log = QTextEdit()
         self.log.setReadOnly(True)
         self.btn_attack = QPushButton("Attack Enemy")
@@ -36,6 +38,10 @@ class RPGWindow(QMainWindow):
         dmg = self.player.attack(self.enemy)
         self.log.append(f"You hit {self.enemy.name} for {dmg} damage!")
         
+        # Enemy attacks player when player presses arrack enemy button
+        dmg_enemy = self.enemy.attack(self.player)
+        self.log.append(f"{self.enemy.name} hits you for {dmg_enemy} damage!")
+
         if not self.enemy.is_alive():
             self.log.append("The enemy is defeated!")
             self.btn_attack.setEnabled(False)

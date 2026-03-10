@@ -14,14 +14,3 @@ class Character:
 
     def is_alive(self):
         return self.hp > 0
-
-# class enemy:
-#     def __init__(self, name, hp, attack_power):
-#         self.name = name
-#         self.hp = hp
-#         self.max_hp = hp
-#         self.attack_power = attack_power
-
-#     def attack(self):
-
-        
