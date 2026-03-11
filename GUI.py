@@ -3,11 +3,12 @@ import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QTextEdit
 from engine import Character #Importerar saker från engine.py
 
+
 class RPGWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Py Dungeon")
-            
+
         # Initialize Game Data
         self.player = Character("Hero", 100, 10)
 
