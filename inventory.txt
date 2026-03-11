@@ -1,0 +1,4 @@
+Health 100/100
+health-potion 1/10
+food
+armor-points 12/100

@@ -1,13 +1,13 @@
 import random
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QTextEdit
-from engine import Character # Importing your logic!
+from engine import Character #Importerar saker från engine.py
 
 class RPGWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Py Dungeon")
-        
+            
         # Initialize Game Data
         self.player = Character("Hero", 100, 10)
 
@@ -74,11 +74,11 @@ class RPGWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def do_combat_round(self):
-        # Player attacks enemy
+        # Så att spelaren attackerar enemy
         dmg = self.player.attack(self.enemy)
         self.log.append(f"You hit {self.enemy.name} for {dmg} damage!")
         
-        # Enemy attacks player when player presses arrack enemy button
+        # Enemy attackerar spelaren när man attackerar den
         dmg_enemy = self.enemy.attack(self.player)
         self.log.append(f"{self.enemy.name} hits you for {dmg_enemy} damage!")
 
@@ -87,7 +87,7 @@ class RPGWindow(QMainWindow):
             self.btn_attack.setEnabled(False)
         
         # Update HP display
-        self.label_hp.setText(f"Player HP: {self.player.hp} | Enemy HP: {self.enemy.hp}")
+        self.label_hp.setText(f"Player HP: {self.player.hp} | {self.enemy.name} HP: {self.enemy.hp}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
