@@ -91,6 +91,8 @@ class RPGWindow(QMainWindow):
 
         if not self.enemy.is_alive():
             self.log.append("The enemy is defeated!")
+            self.items_reward = random.choice(list(self.inventory.get_all_items().keys()))
+            self.log.append(f"You found a {self.items_reward} on the enemy!")
             self.btn_attack.setEnabled(False)
         
         # Update HP display
