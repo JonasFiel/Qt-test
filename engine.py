@@ -6,6 +6,22 @@ class Room:
         self.exits = {}
         self.characters = []
 
+    def slump_items(self, items):
+        self.items = items
+        self.randomItems = random.randint(0, 100)
+        if self.randomItems <= 80:
+            self.commonRandom = random.choice(self.commonItems)
+            self.commonItems = ["Bronze Key"]
+        elif self.randomItems <= 60:
+            self.rareRandom = random.choice(self.rareItems)
+            self.rareItems = ["Silver Key"]
+        elif self.randomItems <= 40:
+            self.legRandom = random.choice(self.legItems)
+            self.legItems = ["Golden Key"]
+        else:
+            self.items = None
+        
+            
     def add_exit(self, direction, room):
         self.exits[direction] = room
 
