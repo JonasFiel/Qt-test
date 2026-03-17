@@ -1,7 +1,7 @@
 import random
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QTextEdit
-from engine import Character #Importerar saker från engine.py
+from engine import Character, Inventory, InventoryItem, Room  #Importerar saker från engine.py
 
 
 class RPGWindow(QMainWindow):
@@ -11,12 +11,19 @@ class RPGWindow(QMainWindow):
 
         # Initialize Game Data
         self.player = Character("Hero", 100, 10)
+        self.inventory = Inventory()
 
         self.enemy_slime = Character("Slime", 30, 5)
-        self.enemy_goblin = Character("Goblin", 50, 7)  # You can switch between different enemies here!
+        self.enemy_goblin = Character("Goblin", 50, 7)
+        self.enemy_dragon = Character("Dragon", 200, 20)
+        self.enemy_wraith = Character("Wraith", 80, 15)
 
-        enemies = [self.enemy_slime, self.enemy_goblin]
-        self.enemy = random.choice(enemies)  # Randomly select an enemy for the player to fight when going north
+        enemiesAll = [self.enemy_slime, self.enemy_goblin, self.enemy_dragon, self.enemy_wraith]
+        enemiesEasy = [self.enemy_slime, self.enemy_goblin]
+        enemiesHard = [self.enemy_wraith]
+        enemiesBoss = [self.enemy_dragon]
+
+        self.enemy = random.choice(enemiesEasy)  # Randomly select an enemy for the player to fight when going north
 
         # Setup UI
         self.setup_ui()
@@ -56,7 +63,6 @@ class RPGWindow(QMainWindow):
         self.setCentralWidget(container)
 
 
-
     def fight_ui(self):
         self.label_hp = QLabel(f"Player HP: {self.player.hp} | {self.enemy.name} HP: {self.enemy.hp}")
         self.log = QTextEdit()
@@ -85,6 +91,8 @@ class RPGWindow(QMainWindow):
 
         if not self.enemy.is_alive():
             self.log.append("The enemy is defeated!")
+            self.items_reward = random.choice(list(self.inventory.get_all_items().keys()))
+            self.log.append(f"You found a {self.items_reward} on the enemy!")
             self.btn_attack.setEnabled(False)
         
         # Update HP display
