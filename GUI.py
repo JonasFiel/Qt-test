@@ -2,6 +2,7 @@ import random
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QTextEdit
 from engine import Character, Inventory, InventoryItem, Room  #Importerar saker från engine.py
+from PySide6.QtCore import QTimer
 
 
 class RPGWindow(QMainWindow):
@@ -91,8 +92,15 @@ class RPGWindow(QMainWindow):
 
         if not self.enemy.is_alive():
             self.log.append("The enemy is defeated!")
-            self.items_reward = random.choice(list(self.inventory.get_all_items().keys()))
-            self.log.append(f"You found a {self.items_reward} on the enemy!")
+            self.RandomItem = random.choice(list(self.inventory.get_all_items().values()))
+            self.log.append(f"You found a {self.RandomItem.name}!")
+            self.inventory.add_item(self.RandomItem.name, 1)
+            self.btn_attack.setEnabled(False)  # Disable attack button after defeating the enemy
+            self.wait_timer = QTimer()
+            self.wait_timer.timeout.connect(self.setup_ui)  # Return to main UI after waiting
+            self.wait_timer.start(2000)  # Wait 2 seconds before returning to main UI
+        elif not self.player.is_alive():
+            self.log.append("You have been defeated! Game Over.")
             self.btn_attack.setEnabled(False)
         
         # Update HP display
