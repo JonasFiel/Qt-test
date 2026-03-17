@@ -5,6 +5,7 @@ class Room:
         self.description = description
         self.exits = {}
         self.characters = []
+        #fake jews
 
     def slump_items(self, items):
         self.items = items
