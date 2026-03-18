@@ -35,6 +35,9 @@ class RPGWindow(QMainWindow):
         self.log = QTextEdit()
         self.log.setReadOnly(True) # Make the log read-only so players can't type in it
 
+        self.inventory_label = QLabel("Inventory:")
+        self.inventory_list = QLabel("\n".join([str(item) for item in self.inventory.get_all_items().values()]))  # Display inventory items
+
         self.btn_north = QPushButton("Go North")
         self.btn_south = QPushButton("Go South")
         self.btn_east = QPushButton("Go East")
@@ -44,6 +47,10 @@ class RPGWindow(QMainWindow):
         self.btn_south.clicked.connect(self.fight_ui)
         self.btn_east.clicked.connect(self.fight_ui)
         self.btn_west.clicked.connect(self.fight_ui)
+
+        inventory_layout = QVBoxLayout()
+        inventory_layout.addWidget(self.inventory_label)
+        inventory_layout.addWidget(self.inventory_list)
 
         button_layout = QVBoxLayout()
         button_layout.addWidget(self.btn_north)
@@ -56,6 +63,7 @@ class RPGWindow(QMainWindow):
         label_layout.addWidget(self.log)
 
         layout = QHBoxLayout()
+        layout.addLayout(inventory_layout)
         layout.addLayout(label_layout)
         layout.addLayout(button_layout)
 
