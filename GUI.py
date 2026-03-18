@@ -95,16 +95,16 @@ class RPGWindow(QMainWindow):
             self.RandomItem = random.choice(list(self.inventory.get_all_items().values()))
             self.log.append(f"You found a {self.RandomItem.name}!")
             self.inventory.add_item(self.RandomItem.name, 1)
-            self.btn_attack.setEnabled(False)  # Disable attack button after defeating the enemy
+            self.btn_attack.setEnabled(False)  #Gör så att attack inte gör något
             self.wait_timer = QTimer()
-            self.wait_timer.timeout.connect(self.setup_ui)  # Return to main UI after waiting
+            self.wait_timer.timeout.connect(self.setup_ui)  #Tillbaks till huvudmenyn efter att ha vunnit
             self.wait_timer.start(2000)  # Wait 2 seconds before returning to main UI
         elif not self.player.is_alive():
             self.log.append("You have been defeated! Game Over.")
             self.btn_attack.setEnabled(False)
         
         # Update HP display
-        self.label_hp.setText(f"Player HP: {self.player.hp} | {self.enemy.name} HP: {self.enemy.hp}")
+        self.label_hp.setText(f"Player HP: {self.player.hp} / {self.enemy.name} HP: {self.enemy.hp}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

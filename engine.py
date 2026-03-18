@@ -5,21 +5,6 @@ class Room:
         self.description = description
         self.exits = {}
         self.characters = []
-
-    def slump_items(self, items):
-        self.items = items
-        self.randomItems = random.randint(0, 100)
-        if self.randomItems <= 80:
-            self.commonRandom = random.choice(self.commonItems)
-            self.commonItems = ["Bronze Key"]
-        elif self.randomItems <= 60:
-            self.rareRandom = random.choice(self.rareItems)
-            self.rareItems = ["Silver Key"]
-        elif self.randomItems <= 40:
-            self.legRandom = random.choice(self.legItems)
-            self.legItems = ["Golden Key"]
-        else:
-            self.items = None
         
             
     def add_exit(self, direction, room):
@@ -45,6 +30,21 @@ class InventoryItem:
 
     def __str__(self):
         return f"{self.name}: {self.current}/{self.max_stack}"
+    
+    def slump_items(self, items):
+        self.items = items
+        self.randomItems = random.randint(0, 100)
+        if self.randomItems <= 80:
+            self.commonRandom = random.choice(self.commonItems)
+            self.commonItems = ["Bronze Key"]
+        elif self.randomItems <= 60:
+            self.rareRandom = random.choice(self.rareItems)
+            self.rareItems = ["Silver Key"]
+        elif self.randomItems <= 40:
+            self.legRandom = random.choice(self.legItems)
+            self.legItems = ["Golden Key"]
+        else:
+            self.items = None
 
 
 class Inventory:
@@ -60,6 +60,11 @@ class Inventory:
                     name, amounts = line.split(" - ")
                     current, max_stack = amounts.split("/")
                     self.items[name] = InventoryItem(name, int(current), int(max_stack))
+
+    def save_to_file(self):
+        with open("inventory.txt", "w") as f:
+            for item in self.items.values():
+                f.write(f"{item.name} - {item.current}/{item.max_stack}\n")
 
     def get_item(self, item_name):
         return self.items.get(item_name)
