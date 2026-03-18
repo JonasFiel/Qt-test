@@ -43,7 +43,7 @@ class RPGWindow(QMainWindow):
         self.btn_east = QPushButton("Go East")
         self.btn_west = QPushButton("Go West")
 
-        self.btn_north.clicked.connect(self.fight_ui)
+        self.btn_north.clicked.connect(self.room)
         self.btn_south.clicked.connect(self.fight_ui)
         self.btn_east.clicked.connect(self.fight_ui)
         self.btn_west.clicked.connect(self.fight_ui)
@@ -70,6 +70,24 @@ class RPGWindow(QMainWindow):
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
+
+
+    def room(self):
+        self.random_room = random.choice(["a dimly lit cave"])
+        self.label.setText(f"You enter {self.random_room}.")
+
+
+
+        if self.random_room == "a dimly lit cave":
+            self.log.append(f"You enter {self.random_room}.")
+            self.log.append("You see a glint of something shiny in the corner.")
+            self.inventory.add_item("Bronze Key", 1)
+            self.log.append("You found a Bronze Key!")
+            self.wait_timer = QTimer()
+            self.log.append("An enemy approaches!")
+            self.wait_timer.timeout.connect(self.fight_ui)  # Start fight UI after finding the item
+            self.wait_timer.start(5000)  # Wait 2 seconds before starting the fight
+
 
 
     def fight_ui(self):
