@@ -45,7 +45,7 @@ class InventoryItem:
         self.randomItems = random.randint(0, 100)
         if self.randomItems <= 80:
             self.commonRandom = random.choice(self.commonItems)
-            self.commonItems = ["Bronze Key"]
+            self.commonItems = ["Bronze Key","Food","Armor Points","Health Potion"]
         elif self.randomItems <= 60:
             self.rareRandom = random.choice(self.rareItems)
             self.rareItems = ["Silver Key"]
@@ -54,7 +54,7 @@ class InventoryItem:
             self.legItems = ["Golden Key"]
         else:
             self.items = None
-
+        
 
 class Inventory:
     def __init__(self):
