@@ -43,15 +43,14 @@ class RPGWindow(QMainWindow):
         self.btn_east = QPushButton("Go East")
         self.btn_west = QPushButton("Go West")
 
-        self.btn_north.show()
-        self.btn_south.show()
-        self.btn_east.show()
-        self.btn_west.show()
-
         self.btn_north.clicked.connect(self.room)
         self.btn_south.clicked.connect(self.fight_ui)
         self.btn_east.clicked.connect(self.fight_ui)
         self.btn_west.clicked.connect(self.fight_ui)
+
+        self.buttons = [self.btn_north, self.btn_south, self.btn_east, self.btn_west]
+        for btn in self.buttons:
+            btn.setFixedWidth(100)  # Set a fixed width for all buttons for better UI consistency
 
         inventory_layout = QVBoxLayout()
         inventory_layout.addWidget(self.inventory_label)
@@ -77,9 +76,14 @@ class RPGWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def room(self):
+        
+        for btn in self.buttons:
+            btn.setEnabled(False)  # Disable all buttons to prevent multiple clicks while processing the room event
+
         self.random_description = random.choice(["a dimly lit cave.", "a damp prison cell.", "a deep pit.", "a small mossy room."])
-        self.item_chance = random.randint(0, 100)
         self.log.append(f"You entered {self.random_description}.")
+
+        self.item_chance = random.randint(0, 100)
         if self.item_chance <= 100:
             self.slump_items = InventoryItem.slump_items(self, self.inventory)
             self.log.append(f"You found {self.slump_items}.")
