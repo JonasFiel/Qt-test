@@ -1,6 +1,7 @@
-Armor Points - 12/100
-Health Potion - 1/10
-Food - 0/10
-Bronze Key - 0/3
-Silver Key - 0/3
-Gold Key - 0/3
+health - 100/100
+armorPoints - 12/100
+healthPotion - 1/10
+food - 0/10
+bronzeKey - 0/3
+silverKey - 0/3
+goldKey - 0/3
