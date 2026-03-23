@@ -43,6 +43,11 @@ class RPGWindow(QMainWindow):
         self.btn_east = QPushButton("Go East")
         self.btn_west = QPushButton("Go West")
 
+        self.btn_north.show()
+        self.btn_south.show()
+        self.btn_east.show()
+        self.btn_west.show()
+
         self.btn_north.clicked.connect(self.room)
         self.btn_south.clicked.connect(self.fight_ui)
         self.btn_east.clicked.connect(self.fight_ui)
@@ -71,22 +76,32 @@ class RPGWindow(QMainWindow):
         container.setLayout(layout)
         self.setCentralWidget(container)
 
-
     def room(self):
-        self.random_room = random.choice(["a dimly lit cave"])
-        self.label.setText(f"You enter {self.random_room}.")
+        self.random_description = random.choice(["a dimly lit cave.", "a damp prison cell.", "a deep pit.", "a small mossy room."])
+        self.item_chance = random.randint(0, 100)
+        self.log.append(f"You entered {self.random_description}.")
+        if self.item_chance <= 100:
+            self.slump_items = InventoryItem.slump_items(self, self.inventory)
+            self.log.append(f"You found {self.slump_items}.")
+            if self.slump_items is not None:
+                self.inventory.add_item(self.slump_items.name, 1)
+                self.log.append(f"You added {self.slump_items.name} to your inventory!")
 
-
-
-        if self.random_room == "a dimly lit cave":
-            self.log.append(f"You enter {self.random_room}.")
-            self.log.append("You see a glint of something shiny in the corner.")
-            self.inventory.add_item("Bronze Key", 1)
-            self.log.append("You found a Bronze Key!")
-            self.wait_timer = QTimer()
+        self.enemy_chance = random.randint(0, 100)
+        if self.enemy_chance <= 80: 
             self.log.append("An enemy approaches!")
-            self.wait_timer.timeout.connect(self.fight_ui)  # Start fight UI after finding the item
-            self.wait_timer.start(5000)  # Wait 2 seconds before starting the fight
+            self.fight_ui()
+
+        # if self.random_room == "a dimly lit cave":
+        #     self.log.append(f"You enter {self.random_room}.")
+        #     self.log.append("You see a glint of something shiny in the corner.")
+        #     self.inventory.add_item("Bronze Key", 1)
+        #     self.log.append("You found a Bronze Key!")
+        #     self.wait_timer = QTimer()
+        #     self.log.append("An enemy approaches!")
+            
+        #     self.approach_enemy = QPushButton(f"A {self.enemy.name} appears!")
+        #     self.approach_enemy.clicked.connect(self.fight_ui)
 
 
 
