@@ -3,12 +3,21 @@ import random
 class Room:
     def __init__(self, description):
         self.description = description
-        self.exits = {}
         self.characters = []
-        
             
     def add_exit(self, direction, room):
-        self.exits[direction] = room
+        self.exits = {}
+        self.direktions = ["North", "South", "East", "West"]
+        for direction in self.direktions:
+            self.origin = [self.direktions - 2]
+            for i in range(4):
+                self.exit = random.choice(self.direktions)
+                if self.exit == self.origin:
+                    self.exit = None
+                else:
+                    self.exits.append(self.exit)
+
+        self.direction = direction
 
     def add_character(self, character):
         self.characters.append(character)
