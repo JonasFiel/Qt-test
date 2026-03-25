@@ -24,7 +24,7 @@ class RPGWindow(QMainWindow):
         enemiesHard = [self.enemy_wraith]
         enemiesBoss = [self.enemy_dragon]
 
-        self.enemy = random.choice(enemiesEasy)  # Randomly select an enemy for the player to fight when going north
+        self.enemyeasy = random.choice(enemiesEasy)  # Randomly select an enemy for the player to fight when going north
 
         # Setup UI
         self.setup_ui()
@@ -44,9 +44,26 @@ class RPGWindow(QMainWindow):
         self.btn_west = QPushButton("Go West")
 
         self.btn_north.clicked.connect(self.room)
-        self.btn_south.clicked.connect(self.fight_ui)
-        self.btn_east.clicked.connect(self.fight_ui)
-        self.btn_west.clicked.connect(self.fight_ui)
+        self.btn_south.clicked.connect(self.room)
+        self.btn_east.clicked.connect(self.room)
+        self.btn_west.clicked.connect(self.room)
+
+        # room_chance = random.randint(0, 100)
+        # if room_chance <= 50:
+        #     self.log.append("You see a door to the north. It looks like it leads to another room.")
+        # if room_chance <= 20:
+        #     # Need a bronze key to enter this room
+        #     self.log.append("You see a door to the north, but it is locked. You need a Bronze Key to enter.")
+        #     self.btn_north.setEnabled(False)  # Disable the north button until the player finds a Bronze Key
+        # elif room_chance <= 40:
+        #     # Need a silver key to enter this room
+        #     self.log.append("You see a door to the north, but it is locked. You need a Silver Key to enter.")
+        #     self.btn_north.setEnabled(False)  # Disable the north button until the player finds a Silver Key
+        # elif room_chance <= 60:
+        #     # Need a golden key to enter this room
+        #     self.log.append("You see a door to the north, but it is locked. You need a Golden Key to enter.")
+        #     self.btn_north.setEnabled(False)  # Disable the north button until the player finds a Golden Key
+
 
         self.buttons = [self.btn_north, self.btn_south, self.btn_east, self.btn_west]
         for btn in self.buttons:
@@ -82,30 +99,31 @@ class RPGWindow(QMainWindow):
 
         self.random_description = random.choice(["a dimly lit cave.", "a damp prison cell.", "a deep pit.", "a small mossy room."])
         self.log.append(f"You entered {self.random_description}.")
+        
+        # Show item message after 1 second
+        QTimer.singleShot(1000, self.show_item_message)
+        
+        # Check for enemy after 2.5 seconds
+        QTimer.singleShot(2500, self.check_for_enemy)
 
+    def show_item_message(self):
         self.item_chance = random.randint(0, 100)
-        if self.item_chance <= 100:
-            self.slump_items = InventoryItem.slump_items(self, self.inventory)
-            self.log.append(f"You found {self.slump_items}.")
-            if self.slump_items is not None:
-                self.inventory.add_item(self.slump_items.name, 1)
-                self.log.append(f"You added {self.slump_items.name} to your inventory!")
+        if self.item_chance <= 50:
+            self.RandomItem = random.choice(list(self.inventory.get_all_items().values()))
+            self.log.append(f"You found a {self.RandomItem.name}!")
+            self.inventory.add_item(self.RandomItem.name, 1)
+        else:
+            self.log.append("You found nothing of value.")
 
+    def check_for_enemy(self):
         self.enemy_chance = random.randint(0, 100)
-        if self.enemy_chance <= 80: 
-            self.log.append("An enemy approaches!")
-            self.fight_ui()
-
-        # if self.random_room == "a dimly lit cave":
-        #     self.log.append(f"You enter {self.random_room}.")
-        #     self.log.append("You see a glint of something shiny in the corner.")
-        #     self.inventory.add_item("Bronze Key", 1)
-        #     self.log.append("You found a Bronze Key!")
-        #     self.wait_timer = QTimer()
-        #     self.log.append("An enemy approaches!")
-            
-        #     self.approach_enemy = QPushButton(f"A {self.enemy.name} appears!")
-        #     self.approach_enemy.clicked.connect(self.fight_ui)
+        if self.enemy_chance <= 80:
+            self.enemy = random.choice([self.enemyeasy])
+            self.log.append(f"An enemy approaches: {self.enemy.name}!")
+            QTimer.singleShot(1000, self.fight_ui)
+        else:
+            for btn in self.buttons:
+                btn.setEnabled(True)
 
 
 
@@ -141,9 +159,8 @@ class RPGWindow(QMainWindow):
             self.log.append(f"You found a {self.RandomItem.name}!")
             self.inventory.add_item(self.RandomItem.name, 1)
             self.btn_attack.setEnabled(False)  #Gör så att attack inte gör något
-            self.wait_timer = QTimer()
-            self.wait_timer.timeout.connect(self.setup_ui)  #Tillbaks till huvudmenyn efter att ha vunnit
-            self.wait_timer.start(2000)  # Wait 2 seconds before returning to main UI
+
+            QTimer.singleShot(2000, self.setup_ui)  # Gå tillbaka till huvud UI efter 2 sekunder
         elif not self.player.is_alive():
             self.log.append("You have been defeated! Game Over.")
             self.btn_attack.setEnabled(False)
