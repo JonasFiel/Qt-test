@@ -3,7 +3,6 @@ import random
 class Room:
     def __init__(self, description):
         self.description = description
-        self.characters = []
             
     def add_exit(self, direction, room):
         self.exits = {}
@@ -18,9 +17,6 @@ class Room:
                     self.exits.append(self.exit)
 
         self.direction = direction
-
-    def add_character(self, character):
-        self.characters.append(character)
         
 class InventoryItem:
     def __init__(self, name, current, max_stack):
@@ -40,20 +36,35 @@ class InventoryItem:
     def __str__(self):
         return f"{self.name}: {self.current}/{self.max_stack}"
     
-    def slump_items(self, items):
-        self.items = items
-        self.randomItems = random.randint(0, 100)
-        if self.randomItems <= 80:
-            self.commonRandom = random.choice(self.commonItems)
-            self.commonItems = ["Bronze Key","Food","Armor Points","Health Potion"]
-        elif self.randomItems <= 60:
-            self.rareRandom = random.choice(self.rareItems)
-            self.rareItems = ["Silver Key"]
-        elif self.randomItems <= 40:
-            self.legRandom = random.choice(self.legItems)
-            self.legItems = ["Golden Key"]
+    @staticmethod
+    def slump_items():
+        randomItems = random.randint(0, 100)
+        if randomItems <= 80:
+            return random.choice(["bronzeKey", "food", "armorPoints", "healthPotion"])
+        elif randomItems <= 60:
+            return random.choice(["silverKey"])
+        elif randomItems <= 40:
+            return random.choice(["goldKey"])
         else:
-            self.items = None
+            return None
+
+class Use:
+    def __init__(self, inventory, character):
+        self.inventory = inventory
+        self.character = character
+
+    def use_item(self, item_name, amount=1):
+        if self.inventory.use_item(item_name, amount):
+            if item_name == "healthPotion":
+                self.character.hp = min(self.character.hp + 20, self.character.max_hp)
+                return True
+            elif item_name == "food":
+                self.character.hp = min(self.character.hp + 10, self.character.max_hp)
+                return True
+            # Add more effects here
+            return True
+        return False
+
         
 
 class Inventory:
@@ -107,3 +118,13 @@ class Character:
 
     def is_alive(self):
         return self.hp > 0
+
+    def use_item(self, item_name):
+        if item_name == "healthPotion":
+            self.hp = min(self.hp + 20, self.max_hp)
+            return True
+        elif item_name == "food":
+            self.hp = min(self.hp + 10, self.max_hp)
+            return True
+        # Add more items here
+        return False
