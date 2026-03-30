@@ -1,23 +1,5 @@
 import random
-
-class Room:
-    def __init__(self, description):
-        self.description = description
-            
-    def add_exit(self, direction, room):
-        self.exits = {}
-        self.direktions = ["North", "South", "East", "West"]
-        for direction in self.direktions:
-            self.origin = [self.direktions - 2]
-            for i in range(4):
-                self.exit = random.choice(self.direktions)
-                if self.exit == self.origin:
-                    self.exit = None
-                else:
-                    self.exits.append(self.exit)
-
-        self.direction = direction
-        
+      
 class InventoryItem:
     def __init__(self, name, current, max_stack):
         self.name = name
@@ -53,8 +35,8 @@ class Use:
         self.inventory = inventory
         self.character = character
 
-    def use_item(self, item_name, amount=1):
-        if self.inventory.use_item(item_name, amount):
+    def _item(self, item_name, amount=1):
+        if self.inventory._item(item_name, amount):
             if item_name == "healthPotion":
                 self.character.hp = min(self.character.hp + 20, self.character.max_hp)
                 return True
@@ -65,7 +47,7 @@ class Use:
             return True
         return False
 
-        
+
 
 class Inventory:
     def __init__(self):
@@ -128,3 +110,114 @@ class Character:
             return True
         # Add more items here
         return False
+
+
+class Enemy(Character):
+    """Enemy with preset types and extended stats copied from GUI setup."""
+
+    PRESET_STATS = {
+        "slime": {
+            "name": "Slime",
+            "hp": 30,
+            "attack_power": 5,
+            "enemy_type": "easy",
+            "armor": 0,
+            "speed": 4,
+            "xp_reward": 10,
+            "loot_table": ["food", "bronzeKey"]
+        },
+        "goblin": {
+            "name": "Goblin",
+            "hp": 50,
+            "attack_power": 7,
+            "enemy_type": "easy",
+            "armor": 2,
+            "speed": 6,
+            "xp_reward": 20,
+            "loot_table": ["food", "bronzeKey", "armorPoints"]
+        },
+        "wraith": {
+            "name": "Wraith",
+            "hp": 80,
+            "attack_power": 15,
+            "enemy_type": "hard",
+            "armor": 4,
+            "speed": 8,
+            "xp_reward": 45,
+            "loot_table": ["silverKey", "healthPotion"]
+        },
+        "dragon": {
+            "name": "Dragon",
+            "hp": 200,
+            "attack_power": 20,
+            "enemy_type": "boss",
+            "armor": 10,
+            "speed": 5,
+            "xp_reward": 100,
+            "loot_table": ["goldKey", "armorPoints", "healthPotion"]
+        },
+    }
+
+    def __init__(self, name, hp, attack_power, enemy_type="generic", armor=0, speed=5, xp_reward=0, loot_table=None):
+        super().__init__(name, hp, attack_power)
+        self.enemy_type = enemy_type
+        self.armor = armor
+        self.speed = speed
+        self.xp_reward = xp_reward
+        self.loot_table = loot_table or []
+
+    @classmethod
+    def from_preset(cls, preset_name):
+        preset = cls.PRESET_STATS.get(preset_name.lower())
+        if not preset:
+            raise ValueError(f"Unknown enemy preset: {preset_name}")
+        return cls(
+            name=preset["name"],
+            hp=preset["hp"],
+            attack_power=preset["attack_power"],
+            enemy_type=preset["enemy_type"],
+            armor=preset["armor"],
+            speed=preset["speed"],
+            xp_reward=preset["xp_reward"],
+            loot_table=preset["loot_table"],
+        )
+
+    @classmethod
+    def get_easy_enemies(cls):
+        return [cls.from_preset("slime"), cls.from_preset("goblin")]
+
+    @classmethod
+    def get_hard_enemies(cls):
+        return [cls.from_preset("wraith")]
+
+    @classmethod
+    def get_boss_enemies(cls):
+        return [cls.from_preset("dragon")]
+
+    def __str__(self):
+        return f"{self.name} ({self.enemy_type.capitalize()}) - HP: {self.hp}/{self.max_hp}, Attack: {self.attack_power}, Armor: {self.armor}, Speed: {self.speed}"
+
+    def is_defeated(self):
+        return self.hp <= 0
+
+    def take_damage(self, damage):
+        reduced = max(0, damage - self.armor)
+        self.hp -= reduced
+        return self.hp <= 0
+
+    def attack(self, other):
+        damage = random.randint(max(1, self.attack_power - 2), self.attack_power + 2)
+        if hasattr(other, "take_damage"):
+            other.take_damage(damage)
+        else:
+            other.hp -= damage
+        return damage
+
+    def drop_loot(self):
+        if self.loot_table:
+            return random.choice(self.loot_table)
+        return InventoryItem.slump_items()
+
+    def taunt(self):
+        return f"{self.name} ({self.enemy_type}) snarls at you!"
+   
