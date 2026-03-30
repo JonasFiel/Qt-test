@@ -1,7 +1,7 @@
 import random
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QTextEdit
-from engine import Character, Inventory, InventoryItem, Room  #Importerar saker från engine.py
+from engine import Character, Inventory, InventoryItem, Room, Use  #Importerar saker från engine.py
 from PySide6.QtCore import QTimer
 
 
@@ -13,6 +13,7 @@ class RPGWindow(QMainWindow):
         # Initialize Game Data
         self.player = Character("Hero", 100, 10)
         self.inventory = Inventory()
+        self.use_item_handler = Use(self.inventory, self.player)
 
         self.enemy_slime = Character("Slime", 30, 5)
         self.enemy_goblin = Character("Goblin", 50, 7)
@@ -109,9 +110,12 @@ class RPGWindow(QMainWindow):
     def show_item_message(self):
         self.item_chance = random.randint(0, 100)
         if self.item_chance <= 50:
-            self.RandomItem = random.choice(list(self.inventory.get_all_items().values()))
-            self.log.append(f"You found a {self.RandomItem.name}!")
-            self.inventory.add_item(self.RandomItem.name, 1)
+            item_name = InventoryItem.slump_items()
+            if item_name:
+                self.log.append(f"You found a {item_name}!")
+                self.inventory.add_item(item_name, 1)
+            else:
+                self.log.append("You found nothing of value.")
         else:
             self.log.append("You found nothing of value.")
 
@@ -132,17 +136,44 @@ class RPGWindow(QMainWindow):
         self.log = QTextEdit()
         self.log.setReadOnly(True)
         self.btn_attack = QPushButton("Attack Enemy")
+        self.btn_use_item = QPushButton("Use Item")
         
         self.btn_attack.clicked.connect(self.do_combat_round)
+        self.btn_use_item.clicked.connect(self.use_item)
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.label_hp)
-        layout.addWidget(self.log)
-        layout.addWidget(self.btn_attack)
+        self.inventory_label = QLabel("Inventory:")
+        self.inventory_list = QLabel("\n".join([str(item) for item in self.inventory.get_all_items().values()]))  # Display inventory items
+
+        # Combat log message
+        self.log.append("A battle begins!")
+
+        # Layout for combat elements
+        combat_layout = QVBoxLayout()
+        combat_layout.addWidget(self.label_hp)
+        combat_layout.addWidget(self.log)
+        combat_layout.addWidget(self.btn_attack)
+        combat_layout.addWidget(self.btn_use_item)
+
+        # Layout for inventory
+        inventory_layout = QVBoxLayout()
+        inventory_layout.addWidget(self.inventory_label)
+        inventory_layout.addWidget(self.inventory_list)
+
+        # Main horizontal layout
+        main_layout = QHBoxLayout()
+        main_layout.addLayout(inventory_layout)
+        main_layout.addLayout(combat_layout)
 
         container = QWidget()
-        container.setLayout(layout)
+        container.setLayout(main_layout)
         self.setCentralWidget(container)
+
+    def use_item(self):
+        if self.use_item_handler.use_item("Health Potion", 1):
+            self.log.append("You used a health potion! You feel rejuvenated! Your HP has been restored by 20 points.")
+            self.label_hp.setText(f"Player HP: {self.player.hp} | {self.enemy.name} HP: {self.enemy.hp}")
+        else:
+            self.log.append("You don't have any health potions left!")
 
     def do_combat_round(self):
         # Så att spelaren attackerar enemy
@@ -155,9 +186,10 @@ class RPGWindow(QMainWindow):
 
         if not self.enemy.is_alive():
             self.log.append("The enemy is defeated!")
-            self.RandomItem = random.choice(list(self.inventory.get_all_items().values()))
-            self.log.append(f"You found a {self.RandomItem.name}!")
-            self.inventory.add_item(self.RandomItem.name, 1)
+            item_name = InventoryItem.slump_items()
+            if item_name:
+                self.log.append(f"You found a {item_name}!")
+                self.inventory.add_item(item_name, 1)
             self.btn_attack.setEnabled(False)  #Gör så att attack inte gör något
 
             QTimer.singleShot(2000, self.setup_ui)  # Gå tillbaka till huvud UI efter 2 sekunder
