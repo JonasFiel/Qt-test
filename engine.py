@@ -107,6 +107,9 @@ class Character:
     def is_alive(self):
         return self.hp > 0
 
+    def reset_hp(self):
+        self.hp = self.max_hp
+
     def use_item(self, item_name):
         if item_name == "healthPotion":
             self.hp = min(self.hp + 20, self.max_hp)

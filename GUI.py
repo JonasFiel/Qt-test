@@ -195,7 +195,6 @@ class RPGWindow(QMainWindow):
             self.btn_attack.setEnabled(False)
             self.btn_use_item.setEnabled(False)
 
-            #Resets the enemies hp after the battle so that they are ready for the next fight
             self.current_enemy.reset_hp()
 
             self.current_enemy = None
@@ -210,6 +209,9 @@ class RPGWindow(QMainWindow):
             self.log.append("You have been defeated! Game Over.")
             self.btn_attack.setEnabled(False)
             self.btn_use_item.setEnabled(False)
+
+            self.current_enemy.reset_hp()
+            self.current_enemy = None
 
         self.label_hp.setText(f"Player HP: {self.player.hp} | {self.current_enemy.name} HP: {self.current_enemy.hp}")
 
