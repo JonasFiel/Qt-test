@@ -87,17 +87,23 @@ class Inventory:
         return [str(item) for item in self.items.values()]
 
 class Character:
-    def __init__(self, name, hp, attack_power):
+    def __init__(self, name, hp, attack_power, speed=5, armor=0):
         self.name = name
         self.hp = hp
         self.max_hp = hp
         self.attack_power = attack_power
+        self.speed = speed
+        self.armor = armor
+        self.hit_chance = 100 - self.dodge_chance()  
 
     def attack(self, other):
         damage = random.randint(self.attack_power - 2, self.attack_power + 2)
         other.hp -= damage
         return damage
-
+    
+    def dodge_chance(self, enemy_speed=0):
+        return self.speed * 5  # Example: 5% dodge chance per speed point
+    
     def is_alive(self):
         return self.hp > 0
 
@@ -123,7 +129,7 @@ class Enemy(Character):
             "enemy_type": "easy",
             "armor": 0,
             "speed": 4,
-            "xp_reward": 10,
+            "coins": random.randint(5, 10),
             "loot_table": ["food", "bronzeKey"]
         },
         "goblin": {
@@ -133,7 +139,7 @@ class Enemy(Character):
             "enemy_type": "easy",
             "armor": 2,
             "speed": 6,
-            "xp_reward": 20,
+            "coins": random.randint(15, 25),
             "loot_table": ["food", "bronzeKey", "armorPoints"]
         },
         "wraith": {
@@ -143,7 +149,7 @@ class Enemy(Character):
             "enemy_type": "hard",
             "armor": 4,
             "speed": 8,
-            "xp_reward": 45,
+            "coins": random.randint(35, 45),
             "loot_table": ["silverKey", "healthPotion"]
         },
         "dragon": {
@@ -153,17 +159,17 @@ class Enemy(Character):
             "enemy_type": "boss",
             "armor": 10,
             "speed": 5,
-            "xp_reward": 100,
+            "coins": random.randint(90, 110),
             "loot_table": ["goldKey", "armorPoints", "healthPotion"]
         },
     }
 
-    def __init__(self, name, hp, attack_power, enemy_type="generic", armor=0, speed=5, xp_reward=0, loot_table=None):
+    def __init__(self, name, hp, attack_power, enemy_type="generic", armor=0, speed=5, coins=0, loot_table=None):
         super().__init__(name, hp, attack_power)
         self.enemy_type = enemy_type
         self.armor = armor
         self.speed = speed
-        self.xp_reward = xp_reward
+        self.coins = coins
         self.loot_table = loot_table or []
 
     @classmethod
@@ -178,7 +184,7 @@ class Enemy(Character):
             enemy_type=preset["enemy_type"],
             armor=preset["armor"],
             speed=preset["speed"],
-            xp_reward=preset["xp_reward"],
+            coins=preset["coins"],
             loot_table=preset["loot_table"],
         )
 
@@ -220,4 +226,5 @@ class Enemy(Character):
 
     def taunt(self):
         return f"{self.name} ({self.enemy_type}) snarls at you!"
+    
    
