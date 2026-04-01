@@ -1,7 +1,7 @@
 import random
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QTextEdit
-from engine import Character, Inventory, InventoryItem, Room, Use  #Importerar saker från engine.py
+from engine import Character, Inventory, InventoryItem, Use, Enemy  #Importerar saker från engine.py
 from PySide6.QtCore import QTimer
 
 
@@ -11,21 +11,16 @@ class RPGWindow(QMainWindow):
         self.setWindowTitle("Py Dungeon")
 
         # Initialize Game Data
-        self.player = Character("Hero", 100, 10)
+        self.player = Character("Hero", 100, 10, 5, 0)
         self.inventory = Inventory()
         self.use_item_handler = Use(self.inventory, self.player)
 
-        self.enemy_slime = Character("Slime", 30, 5)
-        self.enemy_goblin = Character("Goblin", 50, 7)
-        self.enemy_dragon = Character("Dragon", 200, 20)
-        self.enemy_wraith = Character("Wraith", 80, 15)
+        # Define enemies using the Enemy class from engine
+        self.enemies_easy = Enemy.get_easy_enemies()
+        self.enemies_hard = Enemy.get_hard_enemies()
+        self.enemies_boss = Enemy.get_boss_enemies()
 
-        enemiesAll = [self.enemy_slime, self.enemy_goblin, self.enemy_dragon, self.enemy_wraith]
-        enemiesEasy = [self.enemy_slime, self.enemy_goblin]
-        enemiesHard = [self.enemy_wraith]
-        enemiesBoss = [self.enemy_dragon]
-
-        self.enemyeasy = random.choice(enemiesEasy)  # Randomly select an enemy for the player to fight when going north
+        self.current_enemy = None
 
         # Setup UI
         self.setup_ui()
@@ -122,8 +117,8 @@ class RPGWindow(QMainWindow):
     def check_for_enemy(self):
         self.enemy_chance = random.randint(0, 100)
         if self.enemy_chance <= 80:
-            self.enemy = random.choice([self.enemyeasy])
-            self.log.append(f"An enemy approaches: {self.enemy.name}!")
+            self.current_enemy = random.choice(self.enemies_easy)
+            self.log.append(self.current_enemy.taunt())
             QTimer.singleShot(1000, self.fight_ui)
         else:
             for btn in self.buttons:
@@ -132,7 +127,9 @@ class RPGWindow(QMainWindow):
 
 
     def fight_ui(self):
-        self.label_hp = QLabel(f"Player HP: {self.player.hp} | {self.enemy.name} HP: {self.enemy.hp}")
+        if not self.current_enemy:
+            return
+        self.label_hp = QLabel(f"Player HP: {self.player.hp} | {self.current_enemy.name} HP: {self.current_enemy.hp}")
         self.log = QTextEdit()
         self.log.setReadOnly(True)
         self.btn_attack = QPushButton("Attack Enemy")
@@ -144,8 +141,12 @@ class RPGWindow(QMainWindow):
         self.inventory_label = QLabel("Inventory:")
         self.inventory_list = QLabel("\n".join([str(item) for item in self.inventory.get_all_items().values()]))  # Display inventory items
 
+        self.use_item_ui = Use(self.inventory, self.player)  # Create an instance of the Use class to handle item usage
+
+
         # Combat log message
         self.log.append("A battle begins!")
+        self.log.append(self.current_enemy.taunt())
 
         # Layout for combat elements
         combat_layout = QVBoxLayout()
@@ -169,36 +170,48 @@ class RPGWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def use_item(self):
-        if self.use_item_handler.use_item("Health Potion", 1):
+        if self.use_item_handler.use_item("healthPotion", 1):
             self.log.append("You used a health potion! You feel rejuvenated! Your HP has been restored by 20 points.")
-            self.label_hp.setText(f"Player HP: {self.player.hp} | {self.enemy.name} HP: {self.enemy.hp}")
+            if self.current_enemy:
+                self.label_hp.setText(f"Player HP: {self.player.hp} | {self.current_enemy.name} HP: {self.current_enemy.hp}")
+            else:
+                self.label_hp.setText(f"Player HP: {self.player.hp}")
         else:
             self.log.append("You don't have any health potions left!")
 
     def do_combat_round(self):
-        # Så att spelaren attackerar enemy
-        dmg = self.player.attack(self.enemy)
-        self.log.append(f"You hit {self.enemy.name} for {dmg} damage!")
-        
-        # Enemy attackerar spelaren när man attackerar den
-        dmg_enemy = self.enemy.attack(self.player)
-        self.log.append(f"{self.enemy.name} hits you for {dmg_enemy} damage!")
+        if not self.current_enemy:
+            return
 
-        if not self.enemy.is_alive():
+        dmg = self.player.attack(self.current_enemy)
+        self.log.append(f"You hit {self.current_enemy.name} for {dmg} damage!")
+
+        if self.current_enemy.is_defeated():
             self.log.append("The enemy is defeated!")
-            item_name = InventoryItem.slump_items()
-            if item_name:
-                self.log.append(f"You found a {item_name}!")
-                self.inventory.add_item(item_name, 1)
-            self.btn_attack.setEnabled(False)  #Gör så att attack inte gör något
+            loot = self.current_enemy.drop_loot()
+            if loot:
+                self.log.append(f"You found a {loot}!")
+                self.inventory.add_item(loot, 1)
+            self.btn_attack.setEnabled(False)
+            self.btn_use_item.setEnabled(False)
 
-            QTimer.singleShot(2000, self.setup_ui)  # Gå tillbaka till huvud UI efter 2 sekunder
-        elif not self.player.is_alive():
+            #Resets the enemies hp after the battle so that they are ready for the next fight
+            self.current_enemy.reset_hp()
+
+            self.current_enemy = None
+            QTimer.singleShot(2000, self.setup_ui)
+            return
+        
+
+        dmg_enemy = self.current_enemy.attack(self.player)
+        self.log.append(f"{self.current_enemy.name} hits you for {dmg_enemy} damage!")
+
+        if not self.player.is_alive():
             self.log.append("You have been defeated! Game Over.")
             self.btn_attack.setEnabled(False)
-        
-        # Update HP display
-        self.label_hp.setText(f"Player HP: {self.player.hp} / {self.enemy.name} HP: {self.enemy.hp}")
+            self.btn_use_item.setEnabled(False)
+
+        self.label_hp.setText(f"Player HP: {self.player.hp} | {self.current_enemy.name} HP: {self.current_enemy.hp}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
