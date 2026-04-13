@@ -22,11 +22,11 @@ class InventoryItem:
     def slump_items():
         randomItems = random.randint(0, 100)
         if randomItems <= 80:
-            return random.choice(["bronzeKey", "food", "armorPoints", "healthPotion"])
+            return random.choice(["Bronze Key", "Food", "Shield Points", "Health Potion"])
         elif randomItems <= 60:
-            return random.choice(["silverKey"])
+            return random.choice(["Silver Key"])
         elif randomItems <= 40:
-            return random.choice(["goldKey"])
+            return random.choice(["Gold Key"])
         else:
             return None
 
@@ -35,17 +35,24 @@ class Use:
         self.inventory = inventory
         self.character = character
 
-    def _item(self, item_name, amount=1):
-        if self.inventory._item(item_name, amount):
-            if item_name == "healthPotion":
+    def use_item(self, item_name, amount=1):
+        if self.inventory.use_item(item_name, amount):
+            if item_name == "Health Potion":
                 self.character.hp = min(self.character.hp + 20, self.character.max_hp)
                 return True
-            elif item_name == "food":
+            elif item_name == "Food":
                 self.character.hp = min(self.character.hp + 10, self.character.max_hp)
                 return True
             # Add more effects here
             return True
         return False
+
+    def use_best_healing_item(self):
+        if self.inventory.get_item("Health Potion") and self.inventory.get_item("Health Potion").current > 0:
+            return self.use_item("Health Potion", 1), "Health Potion"
+        elif self.inventory.get_item("Food") and self.inventory.get_item("Food").current > 0:
+            return self.use_item("Food", 1), "Food"
+        return False, None
 
 
 
@@ -77,8 +84,10 @@ class Inventory:
         return False
 
     def add_item(self, item_name, amount=1):
-        if item_name in self.items:
-            self.items[item_name].add(amount)
+        if item_name not in self.items:
+            # Create new item with default max_stack of 10
+            self.items[item_name] = InventoryItem(item_name, 0, 10)
+        self.items[item_name].add(amount)
 
     def get_all_items(self):
         return self.items
@@ -111,10 +120,10 @@ class Character:
         self.hp = self.max_hp
 
     def use_item(self, item_name):
-        if item_name == "healthPotion":
+        if item_name == "Health Potion":
             self.hp = min(self.hp + 20, self.max_hp)
             return True
-        elif item_name == "food":
+        elif item_name == "Food":
             self.hp = min(self.hp + 10, self.max_hp)
             return True
         # Add more items here
@@ -133,7 +142,7 @@ class Enemy(Character):
             "armor": 0,
             "speed": 4,
             "coins": random.randint(5, 10),
-            "loot_table": ["food", "bronzeKey"]
+            "loot_table": ["Food", "Bronze Key"]
         },
         "goblin": {
             "name": "Goblin",
@@ -143,7 +152,7 @@ class Enemy(Character):
             "armor": 2,
             "speed": 6,
             "coins": random.randint(15, 25),
-            "loot_table": ["food", "bronzeKey", "armorPoints"]
+            "loot_table": ["Food", "Bronze Key", "Shield Points"]
         },
         "wraith": {
             "name": "Wraith",
@@ -153,7 +162,7 @@ class Enemy(Character):
             "armor": 4,
             "speed": 8,
             "coins": random.randint(35, 45),
-            "loot_table": ["silverKey", "healthPotion"]
+            "loot_table": ["Silver Key", "Health Potion"]
         },
         "dragon": {
             "name": "Dragon",
@@ -163,7 +172,7 @@ class Enemy(Character):
             "armor": 10,
             "speed": 5,
             "coins": random.randint(90, 110),
-            "loot_table": ["goldKey", "armorPoints", "healthPotion"]
+            "loot_table": ["Gold Key", "Shield Points", "Health Potion"]
         },
     }
 

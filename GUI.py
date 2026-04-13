@@ -13,6 +13,8 @@ class RPGWindow(QMainWindow):
         # Initialize Game Data
         self.player = Character("Hero", 100, 10, 5, 0)
         self.inventory = Inventory()
+        self.inventory.add_item("Health Potion", 2)  # Add some initial healing items for testing
+        self.inventory.add_item("Food", 3)
         self.use_item_handler = Use(self.inventory, self.player)
 
         # Define enemies using the Enemy class from engine
@@ -63,7 +65,7 @@ class RPGWindow(QMainWindow):
 
         self.buttons = [self.btn_north, self.btn_south, self.btn_east, self.btn_west]
         for btn in self.buttons:
-            btn.setFixedWidth(100)  # Set a fixed width for all buttons for better UI consistency
+            btn.setFixedWidth(100)  # Set a fixed width for all buttons
 
         inventory_layout = QVBoxLayout()
         inventory_layout.addWidget(self.inventory_label)
@@ -88,6 +90,9 @@ class RPGWindow(QMainWindow):
         container.setLayout(layout)
         self.setCentralWidget(container)
 
+    def update_inventory_display(self):
+        self.inventory_list.setText("\n".join([str(item) for item in self.inventory.get_all_items().values()]))
+
     def room(self):
         
         for btn in self.buttons:
@@ -109,6 +114,7 @@ class RPGWindow(QMainWindow):
             if item_name:
                 self.log.append(f"You found a {item_name}!")
                 self.inventory.add_item(item_name, 1)
+                self.update_inventory_display()
             else:
                 self.log.append("You found nothing of value.")
         else:
@@ -140,8 +146,7 @@ class RPGWindow(QMainWindow):
 
         self.inventory_label = QLabel("Inventory:")
         self.inventory_list = QLabel("\n".join([str(item) for item in self.inventory.get_all_items().values()]))  # Display inventory items
-
-        self.use_item_ui = Use(self.inventory, self.player)  # Create an instance of the Use class to handle item usage
+        self.update_inventory_display()
 
 
         # Combat log message
@@ -170,14 +175,21 @@ class RPGWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def use_item(self):
-        if self.use_item_handler.use_item("healthPotion", 1):
-            self.log.append("You used a health potion! You feel rejuvenated! Your HP has been restored by 20 points.")
-            if self.current_enemy:
-                self.label_hp.setText(f"Player HP: {self.player.hp} | {self.current_enemy.name} HP: {self.current_enemy.hp}")
-            else:
-                self.label_hp.setText(f"Player HP: {self.player.hp}")
+        success, item_used = self.use_item_handler.use_best_healing_item()
+        if success:
+            if item_used == "Health Potion":
+                self.log.append("You used a health potion! You feel rejuvenated! Your HP has been restored by 20 points.")
+            elif item_used == "Food":
+                self.log.append("You ate some food! You feel a bit better. Your HP has been restored by 10 points.")
         else:
-            self.log.append("You don't have any health potions left!")
+            self.log.append("You don't have any healing items left!")
+        
+        if self.current_enemy:
+            self.label_hp.setText(f"Player HP: {self.player.hp} | {self.current_enemy.name} HP: {self.current_enemy.hp}")
+        else:
+            self.label_hp.setText(f"Player HP: {self.player.hp}")
+        
+        self.update_inventory_display()
 
     def do_combat_round(self):
         if not self.current_enemy:
@@ -192,6 +204,7 @@ class RPGWindow(QMainWindow):
             if loot:
                 self.log.append(f"You found a {loot}!")
                 self.inventory.add_item(loot, 1)
+                self.update_inventory_display()
             self.btn_attack.setEnabled(False)
             self.btn_use_item.setEnabled(False)
 
