@@ -238,5 +238,3 @@ class Enemy(Character):
 
     def taunt(self):
         return f"{self.name} ({self.enemy_type}) snarls at you!"
-    
-   
