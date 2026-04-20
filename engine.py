@@ -1,5 +1,6 @@
 import random
       
+# Representerar ett item i inventoryt
 class InventoryItem:
     def __init__(self, name, current, max_stack):
         self.name = name
@@ -18,6 +19,7 @@ class InventoryItem:
     def __str__(self):
         return f"{self.name}: {self.current}/{self.max_stack}"
     
+    # Slumpa ett random item
     @staticmethod
     def slump_items():
         randomItems = random.randint(0, 100)
@@ -30,6 +32,7 @@ class InventoryItem:
         else:
             return None
 
+# Hanterar användning av items
 class Use:
     def __init__(self, inventory, character):
         self.inventory = inventory
@@ -43,24 +46,18 @@ class Use:
             elif item_name == "Food":
                 self.character.hp = min(self.character.hp + 10, self.character.max_hp)
                 return True
-            # Add more effects here
             return True
         return False
 
-    def use_best_healing_item(self):
-        if self.inventory.get_item("Health Potion") and self.inventory.get_item("Health Potion").current > 0:
-            return self.use_item("Health Potion", 1), "Health Potion"
-        elif self.inventory.get_item("Food") and self.inventory.get_item("Food").current > 0:
-            return self.use_item("Food", 1), "Food"
-        return False, None
 
 
-
+# Hanterar spelarens inventorium
 class Inventory:
     def __init__(self):
         self.items = {}
         self._load_from_file()
 
+    # Läs inventoryt från fil
     def _load_from_file(self):
         with open("inventory.txt", "r") as f:
             for line in f.readlines():
@@ -70,6 +67,7 @@ class Inventory:
                     current, max_stack = amounts.split("/")
                     self.items[name] = InventoryItem(name, int(current), int(max_stack))
 
+    # Spara inventoryt till fil
     def save_to_file(self):
         with open("inventory.txt", "w") as f:
             for item in self.items.values():
@@ -85,7 +83,6 @@ class Inventory:
 
     def add_item(self, item_name, amount=1):
         if item_name not in self.items:
-            # Create new item with default max_stack of 10
             self.items[item_name] = InventoryItem(item_name, 0, 10)
         self.items[item_name].add(amount)
 
@@ -95,6 +92,7 @@ class Inventory:
     def display_inventory(self):
         return [str(item) for item in self.items.values()]
 
+# Representerar en karaktär (spelare eller fiende)
 class Character:
     def __init__(self, name, hp, attack_power, speed=5, armor=0):
         self.name = name
@@ -103,33 +101,22 @@ class Character:
         self.attack_power = attack_power
         self.speed = speed
         self.armor = armor
-        self.hit_chance = 100 - self.dodge_chance()  
 
     def attack(self, other):
         damage = random.randint(self.attack_power - 2, self.attack_power + 2)
         other.hp -= damage
         return damage
     
-    def dodge_chance(self, enemy_speed=0):
-        return self.speed * 5  # Example: 5% dodge chance per speed point
-    
+    # Kontrollera om karaktären är vid liv
     def is_alive(self):
         return self.hp > 0
 
+    # Återställ HP till max
     def reset_hp(self):
         self.hp = self.max_hp
 
-    def use_item(self, item_name):
-        if item_name == "Health Potion":
-            self.hp = min(self.hp + 20, self.max_hp)
-            return True
-        elif item_name == "Food":
-            self.hp = min(self.hp + 10, self.max_hp)
-            return True
-        # Add more items here
-        return False
 
-
+# Representerar en fiende
 class Enemy(Character):
     """Enemy with preset types and extended stats copied from GUI setup."""
 
@@ -184,6 +171,7 @@ class Enemy(Character):
         self.coins = coins
         self.loot_table = loot_table or []
 
+    # Skapa en fiende från fördefinierade statistik
     @classmethod
     def from_preset(cls, preset_name):
         preset = cls.PRESET_STATS.get(preset_name.lower())
@@ -200,6 +188,7 @@ class Enemy(Character):
             loot_table=preset["loot_table"],
         )
 
+    # Returnera låta fiender
     @classmethod
     def get_easy_enemies(cls):
         return [cls.from_preset("slime"), cls.from_preset("goblin")]
@@ -231,11 +220,13 @@ class Enemy(Character):
             other.hp -= damage
         return damage
 
+    # Fienden släpper ett byte
     def drop_loot(self):
         if self.loot_table:
             return random.choice(self.loot_table)
         return InventoryItem.slump_items()
 
+    # Fienden hotar spelaren
     def taunt(self):
         return f"{self.name} ({self.enemy_type}) snarls at you!"
     
