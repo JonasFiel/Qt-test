@@ -95,13 +95,13 @@ class Inventory:
 
 # Representerar en karaktär (spelare eller fiende)
 class Character:
-    def __init__(self, name, hp, attack_power, speed=5, armor=0):
+    def __init__(self, name, hp, attack_power, speed=5, sp=0):
         self.name = name
         self.hp = hp
         self.max_hp = hp
         self.attack_power = attack_power
         self.speed = speed
-        self.armor = armor
+        self.sp = sp
 
     def attack(self, other):
         # Check if other dodges
@@ -121,6 +121,10 @@ class Character:
         reduced = max(0, damage - self.sp)
         self.hp -= reduced
         return reduced
+
+    def dodge_chance(self):
+        # Dodge chance scales with speed and is capped to prevent extreme values.
+        return min(50, max(0, self.speed * 5))
     
     # Kontrollera om karaktären är vid liv
     def is_alive(self):
@@ -141,7 +145,7 @@ class Enemy(Character):
             "hp": 30,
             "attack_power": 5,
             "enemy_type": "easy",
-            "armor": 0,
+            "sp": 0,
             "speed": 4,
             "coins": random.randint(5, 10),
             "loot_table": ["Food", "Bronze Key"]
@@ -151,7 +155,7 @@ class Enemy(Character):
             "hp": 50,
             "attack_power": 7,
             "enemy_type": "easy",
-            "armor": 2,
+            "sp": 2,
             "speed": 6,
             "coins": random.randint(15, 25),
             "loot_table": ["Food", "Bronze Key", "Shield scroll"]
@@ -161,7 +165,7 @@ class Enemy(Character):
             "hp": 80,
             "attack_power": 15,
             "enemy_type": "hard",
-            "armor": 4,
+            "sp": 4,
             "speed": 8,
             "coins": random.randint(35, 45),
             "loot_table": ["Silver Key", "Health Potion"]
@@ -171,17 +175,17 @@ class Enemy(Character):
             "hp": 200,
             "attack_power": 20,
             "enemy_type": "boss",
-            "armor": 10,
+            "sp": 10,
             "speed": 5,
             "coins": random.randint(90, 110),
             "loot_table": ["Gold Key", "Shield scroll", "Health Potion"]
         },
     }
 
-    def __init__(self, name, hp, attack_power, enemy_type="generic", armor=0, speed=5, coins=0, loot_table=None):
+    def __init__(self, name, hp, attack_power, enemy_type="generic", sp=0, speed=5, coins=0, loot_table=None):
         super().__init__(name, hp, attack_power)
         self.enemy_type = enemy_type
-        self.armor = armor
+        self.sp = sp
         self.speed = speed
         self.coins = coins
         self.loot_table = loot_table or []
@@ -197,7 +201,7 @@ class Enemy(Character):
             hp=preset["hp"],
             attack_power=preset["attack_power"],
             enemy_type=preset["enemy_type"],
-            armor=preset["armor"],
+            sp=preset["sp"],
             speed=preset["speed"],
             coins=preset["coins"],
             loot_table=preset["loot_table"],
@@ -217,15 +221,15 @@ class Enemy(Character):
         return [cls.from_preset("dragon")]
 
     def __str__(self):
-        return f"{self.name} ({self.enemy_type.capitalize()}) - HP: {self.hp}/{self.max_hp}, Attack: {self.attack_power}, Armor: {self.armor}, Speed: {self.speed}"
+        return f"{self.name} ({self.enemy_type.capitalize()}) - HP: {self.hp}/{self.max_hp}, Attack: {self.attack_power}, sp: {self.sp}, Speed: {self.speed}"
 
     def is_defeated(self):
         return self.hp <= 0
 
     def take_damage(self, damage):
-        reduced = max(0, damage - self.armor)
+        reduced = max(0, damage - self.sp)
         self.hp -= reduced
-        return self.hp <= 0
+        return reduced
 
     def attack(self, other):
         # Check if other dodges

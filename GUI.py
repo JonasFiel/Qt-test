@@ -251,6 +251,8 @@ class RPGWindow(QMainWindow):
 
         dmg = self.player.attack(self.current_enemy)
         self.log.append(f"You hit {self.current_enemy.name} for {dmg} damage!")
+        if dmg == 0:
+            self.log.append(f"{self.current_enemy.name} dodged your attack!")
 
         if self.current_enemy.is_defeated():
             self.log.append("The enemy is defeated!")
@@ -270,6 +272,8 @@ class RPGWindow(QMainWindow):
 
         dmg_enemy = self.current_enemy.attack(self.player)
         self.log.append(f"{self.current_enemy.name} hits you for {dmg_enemy} damage!")
+        if dmg_enemy == 0:
+            self.log.append(f"You dodged {self.current_enemy.name}'s attack!")
 
         if not self.player.is_alive():
             self.log.append("You have been defeated! Game Over.")
