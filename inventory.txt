@@ -1,5 +1,5 @@
 Coins - 0/1000
-Shield Points - 12/100
+Shield scroll - 0/100
 Health Potion - 0/10
 Food - 0/10
 Bronze Key - 0/3

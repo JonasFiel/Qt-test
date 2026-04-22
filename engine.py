@@ -24,9 +24,9 @@ class InventoryItem:
     def slump_items():
         randomItems = random.randint(0, 100)
         if randomItems <= 80:
-            return random.choice(["Bronze Key", "Food", "Shield Points", "Health Potion"])
+            return random.choice(["Bronze Key", "Food", "Health Potion"])
         elif randomItems <= 60:
-            return random.choice(["Silver Key"])
+            return random.choice(["Silver Key", "Shield scroll"])
         elif randomItems <= 40:
             return random.choice(["Gold Key"])
         else:
@@ -38,6 +38,7 @@ class Use:
         self.inventory = inventory
         self.character = character
 
+    # Använd ett item och applicera effekten
     def use_item(self, item_name, amount=1):
         if self.inventory.use_item(item_name, amount):
             if item_name == "Health Potion":
@@ -103,9 +104,23 @@ class Character:
         self.armor = armor
 
     def attack(self, other):
+        # Check if other dodges
+        dodge_roll = random.randint(1, 100)
+        if dodge_roll <= other.dodge_chance():
+            return 0  # Dodged
         damage = random.randint(self.attack_power - 2, self.attack_power + 2)
-        other.hp -= damage
-        return damage
+        
+        if hasattr(other, "take_damage"):
+            actual_damage = other.take_damage(damage)
+        else:
+            other.hp -= damage
+            actual_damage = damage
+        return actual_damage
+    
+    def take_damage(self, damage):
+        reduced = max(0, damage - self.sp)
+        self.hp -= reduced
+        return reduced
     
     # Kontrollera om karaktären är vid liv
     def is_alive(self):
@@ -139,7 +154,7 @@ class Enemy(Character):
             "armor": 2,
             "speed": 6,
             "coins": random.randint(15, 25),
-            "loot_table": ["Food", "Bronze Key", "Shield Points"]
+            "loot_table": ["Food", "Bronze Key", "Shield scroll"]
         },
         "wraith": {
             "name": "Wraith",
@@ -159,7 +174,7 @@ class Enemy(Character):
             "armor": 10,
             "speed": 5,
             "coins": random.randint(90, 110),
-            "loot_table": ["Gold Key", "Shield Points", "Health Potion"]
+            "loot_table": ["Gold Key", "Shield scroll", "Health Potion"]
         },
     }
 
@@ -213,12 +228,17 @@ class Enemy(Character):
         return self.hp <= 0
 
     def attack(self, other):
+        # Check if other dodges
+        dodge_roll = random.randint(1, 100)
+        if dodge_roll <= other.dodge_chance():
+            return 0  # Dodged
         damage = random.randint(max(1, self.attack_power - 2), self.attack_power + 2)
         if hasattr(other, "take_damage"):
-            other.take_damage(damage)
+            actual_damage = other.take_damage(damage)
         else:
             other.hp -= damage
-        return damage
+            actual_damage = damage
+        return actual_damage
 
     # Fienden släpper ett byte
     def drop_loot(self):
@@ -229,5 +249,3 @@ class Enemy(Character):
     # Fienden hotar spelaren
     def taunt(self):
         return f"{self.name} ({self.enemy_type}) snarls at you!"
-    
-   
