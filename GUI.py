@@ -7,6 +7,7 @@ from PySide6.QtCore import QTimer
 # detta är den grafiska delen av spelet, där vi skapar fönstret, knapparna, och all interaktion med användaren. Vi använder klasserna från engine.py för att hantera spelets logik och data.
 class RPGWindow(QMainWindow):
     def __init__(self):
+        #Initierar huvudfönstret för spelet, skapar spelare, inventory och fiender.
         super().__init__()
         self.setWindowTitle("Py Dungeon") #Titel på fönstret
 
@@ -26,6 +27,7 @@ class RPGWindow(QMainWindow):
         self.setup_ui() #Anropar setup_ui metoden som skapar och arrangerar alla grafiska element i fönstret
 
     def setup_ui(self): #Skapar och arrangerar alla grafiska element i fönstret
+        #Skapar och arrangerar alla UI-element som labels, knappar och layouts.
         self.label = QLabel("You are a solo adventurer who has entered the py dungeon. What do you do?")
         self.label.setWordWrap(True)
         self.log = QTextEdit()  #Skapar en textedit som fungerar som en logg för spelets händelser
@@ -91,10 +93,12 @@ class RPGWindow(QMainWindow):
 
     # Uppdaterar inventorydisplayen
     def update_inventory_display(self):
+        #Uppdaterar visningen av inventoryt i UI.
         self.inventory_list.setText("\n".join([str(item) for item in self.inventory.get_all_items().values()]))
 
     # Metod för när man går in i ett rum
     def room(self):
+        #Hanterar när spelaren går in i ett nytt rum, kontrollerar nycklar och startar events.
         # Inaktivera alla riktningsknapparna
         for btn in self.buttons:
             btn.setEnabled(False)
@@ -139,6 +143,7 @@ class RPGWindow(QMainWindow):
 
     # Bestäm om spelaren hittar ett item
     def show_item_message(self):
+        #Slumpar om spelaren hittar ett item och lägger till det i inventoryt.
         self.item_chance = random.randint(0, 100)
         if self.item_chance <= 50:
             item_name = InventoryItem.slump_items()
@@ -154,6 +159,7 @@ class RPGWindow(QMainWindow):
 
     # Bestäm om spelaren möter en fiende
     def check_for_enemy(self):
+        #Slumpar om spelaren möter en fiende och startar strid om så är fallet.
         self.enemy_chance = random.randint(0, 100)
         if self.enemy_chance <= 80:
             self.current_enemy = random.choice(self.enemies_easy)
@@ -166,6 +172,7 @@ class RPGWindow(QMainWindow):
 
     # Skapa UI för strid
     def fight_ui(self):
+        #Skapar UI för stridsscenen med HP-display, logg och knappar.
         # Avbryt om ingen fiende finns
         if not self.current_enemy:
             return
@@ -212,8 +219,10 @@ class RPGWindow(QMainWindow):
         container = QWidget()
         container.setLayout(main_layout)
         self.setCentralWidget(container)
+
     # Använd ett item i strid
     def use_item_by_name(self, item_name): 
+        #Använder ett item från inventoryt under strid och uppdaterar UI.
         if self.use_item_handler.use_item(item_name, 1):
             if item_name == "Health Potion":
                 self.log.append("You used a health potion! You feel rejuvenated! Your HP has been restored by 20 points.")
@@ -235,6 +244,7 @@ class RPGWindow(QMainWindow):
         self.update_usable_item_buttons()
 
     def update_usable_item_buttons(self): 
+        #Uppdaterar knapparna för användbara items baserat på inventory.
         for item_name, btn in getattr(self, 'item_buttons', {}).items():
             item = self.inventory.get_item(item_name)
             if item and item.current > 0:
@@ -246,6 +256,7 @@ class RPGWindow(QMainWindow):
 
     # Genomför en stridsrunda
     def do_combat_round(self):
+        #Genomför en runda i striden, hanterar attacker och kontrollerar vinst/förlust.
         if not self.current_enemy:
             return
 
